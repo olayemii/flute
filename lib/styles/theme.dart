@@ -13,4 +13,11 @@ final lightTheme = ThemeData(
   disabledColor: lightOrange,
   backgroundColor: lightOrange,
   fontFamily: "Poppins",
+  textTheme: TextTheme(
+    body1: TextStyle(),
+    display1: TextStyle(),
+  ).apply(
+    displayColor: Color(0xff333333),
+    bodyColor: Color(0xff333333),
+  ),
 );
