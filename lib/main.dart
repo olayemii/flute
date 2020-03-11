@@ -7,5 +7,6 @@ void main() => runApp(
         theme: lightTheme,
         debugShowCheckedModeBanner: false,
         onGenerateRoute: onGenerateRoute,
+        initialRoute: HomepageRoute,
       ),
     );

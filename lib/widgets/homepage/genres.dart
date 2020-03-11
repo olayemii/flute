@@ -1,3 +1,4 @@
+import 'package:flute/router.dart';
 import 'package:flute/widgets/homepage/genre_card.dart';
 import 'package:flutter/material.dart';
 
@@ -36,10 +37,18 @@ class Genres extends StatelessWidget {
           child: ListView(
             scrollDirection: Axis.horizontal,
             children: <Widget>[
-              GenreCard(
-                genre: "rock",
-                background:
-                    "https://cdn.pixabay.com/photo/2016/01/19/17/56/concert-1149979_960_720.jpg",
+              GestureDetector(
+                onTap: () {
+                  Navigator.of(context).pushNamed(CategoryRoute);
+                },
+                child: Hero(
+                  tag: "rock",
+                  child: GenreCard(
+                    genre: "rock",
+                    background:
+                        "https://cdn.pixabay.com/photo/2016/01/19/17/56/concert-1149979_960_720.jpg",
+                  ),
+                ),
               ),
               GenreCard(
                 genre: "pop",
