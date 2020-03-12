@@ -3,6 +3,7 @@ import 'package:flute/router.dart';
 import 'package:flute/widgets/homepage/artists.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
+import 'package:flutter_audio_query/flutter_audio_query.dart';
 
 class Category extends StatefulWidget {
   @override
@@ -10,29 +11,30 @@ class Category extends StatefulWidget {
 }
 
 class _CategoryState extends State<Category> {
-  bool isMinimumScroll = false;
-  bool isCollapsed = false;
-
+  bool _isMinimumScroll = false;
+  bool _isCollapsed = false;
+  FlutterAudioQuery _audioQuery;
+  List<SongInfo> _songs;
   ScrollController _scrollController = ScrollController();
   void _scrollListener() {
     if (_scrollController.hasClients &&
         _scrollController.offset > (200 - kToolbarHeight)) {
       setState(() {
-        isMinimumScroll = true;
+        _isMinimumScroll = true;
       });
     } else {
       setState(() {
-        isMinimumScroll = false;
+        _isMinimumScroll = false;
       });
     }
     // Keep track if sliver app bar is collapsed
     if (_scrollController.hasClients && _scrollController.offset >= 220.0) {
       setState(() {
-        isCollapsed = true;
+        _isCollapsed = true;
       });
     } else {
       setState(() {
-        isCollapsed = false;
+        _isCollapsed = false;
       });
     }
   }
@@ -40,7 +42,16 @@ class _CategoryState extends State<Category> {
   @override
   void initState() {
     _scrollController.addListener(_scrollListener);
+    checkTracks();
     super.initState();
+  }
+
+  void checkTracks() async {
+    _audioQuery = FlutterAudioQuery();
+    _songs = await _audioQuery.getSongs();
+    setState(() {
+      _songs = _songs;
+    });
   }
 
   @override
@@ -63,9 +74,11 @@ class _CategoryState extends State<Category> {
             height: 50.0,
             decoration: BoxDecoration(
               image: DecorationImage(
-                image: CachedNetworkImageProvider(
-                  "https://www.rollingstone.com/wp-content/uploads/2018/06/eminem-track-by-track-revival-new-57b63db3-3bb9-4b7e-b3a4-7f0e48714a0e.jpg",
-                ),
+                image: _songs[index].albumArtwork != null
+                    ? AssetImage(_songs[index].albumArtwork)
+                    : CachedNetworkImageProvider(
+                        "https://www.rollingstone.com/wp-content/uploads/2018/06/eminem-track-by-track-revival-new-57b63db3-3bb9-4b7e-b3a4-7f0e48714a0e.jpg",
+                      ),
                 fit: BoxFit.cover,
               ),
               borderRadius: BorderRadius.circular(12.0),
@@ -73,14 +86,14 @@ class _CategoryState extends State<Category> {
             ),
           ),
           title: Text(
-            "Eminem",
+            _songs[index].artist,
             style: _theme.textTheme.title.merge(
               TextStyle(
                 fontSize: 16.0,
               ),
             ),
           ),
-          subtitle: Text("Love the way you lie"),
+          subtitle: Text(_songs[index].title),
           trailing: IconButton(
             padding: EdgeInsets.all(0.0),
             icon: Icon(
@@ -102,7 +115,7 @@ class _CategoryState extends State<Category> {
             pinned: true,
             expandedHeight: 270.0,
             title: AnimatedOpacity(
-              opacity: isMinimumScroll ? 1.0 : 0.0,
+              opacity: _isMinimumScroll ? 1.0 : 0.0,
               duration: Duration(milliseconds: 500),
               child: Text("Rock"),
             ),
@@ -118,7 +131,7 @@ class _CategoryState extends State<Category> {
                 Hero(
                   tag: "rock",
                   child: Container(
-                    decoration: isCollapsed
+                    decoration: _isCollapsed
                         ? null
                         : BoxDecoration(
                             image: DecorationImage(
@@ -130,7 +143,7 @@ class _CategoryState extends State<Category> {
                           ),
                   ),
                 ),
-                isMinimumScroll
+                _isMinimumScroll
                     ? SizedBox()
                     : Positioned(
                         right: 30.0,
@@ -158,7 +171,7 @@ class _CategoryState extends State<Category> {
                       ),
                 Positioned(
                   child: AnimatedOpacity(
-                    opacity: isMinimumScroll ? 0.0 : 1.0,
+                    opacity: _isMinimumScroll ? 0.0 : 1.0,
                     child: Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: Text(
@@ -211,7 +224,7 @@ class _CategoryState extends State<Category> {
           ),
           SliverList(
             delegate: SliverChildListDelegate(
-              _buildList(50),
+              _buildList(_songs?.length),
             ),
           )
         ],

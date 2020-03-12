@@ -17,9 +17,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
   AudioCache audioCache;
   bool _isPlaying = false;
   Duration _position;
-
-  static const platform = const MethodChannel('track.channel');
-
+  
   @override
   void initState() {
     initPlayer();
@@ -136,29 +134,6 @@ class _PlayerScreenState extends State<PlayerScreen> {
                 ),
               ),
               SizedBox(height: 15.0),
-              FlatButton(
-                color: _theme.primaryColor,
-                child: Text("Show Track Name"),
-                onPressed: () async {
-                  String trackName;
-                  try {
-                    var result = await platform.invokeMethod(
-                      'getTrackInfo',
-                    );
-                    print(result);
-                    trackName = '${result.toString()}';
-                  } on PlatformException catch (e) {
-                    trackName = "Failed to get track name: '${e.message}'.";
-                  } finally {
-                    setState(() {
-                      _batteryLevel = trackName;
-                    });
-                  }
-                },
-              ),
-              Container(
-                child: Text("$_batteryLevel"),
-              ),
               Container(
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
