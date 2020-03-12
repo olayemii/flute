@@ -53,7 +53,7 @@ class ArtistCard extends StatelessWidget {
             ),
             child: Text(
               name,
-              style: _theme.textTheme.subhead.merge(
+              style: _theme.textTheme.caption.merge(
                 TextStyle(
                   fontSize: 16.0,
                 ),

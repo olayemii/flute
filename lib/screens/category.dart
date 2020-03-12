@@ -11,6 +11,7 @@ class Category extends StatefulWidget {
 
 class _CategoryState extends State<Category> {
   bool isMinimumScroll = false;
+  bool isCollapsed = false;
 
   ScrollController _scrollController = ScrollController();
   void _scrollListener() {
@@ -22,6 +23,16 @@ class _CategoryState extends State<Category> {
     } else {
       setState(() {
         isMinimumScroll = false;
+      });
+    }
+    // Keep track if sliver app bar is collapsed
+    if (_scrollController.hasClients && _scrollController.offset >= 220.0) {
+      setState(() {
+        isCollapsed = true;
+      });
+    } else {
+      setState(() {
+        isCollapsed = false;
       });
     }
   }
@@ -47,6 +58,20 @@ class _CategoryState extends State<Category> {
           onTap: () {
             Navigator.of(context).pushNamed(PlayerRoute);
           },
+          leading: Container(
+            width: 50.0,
+            height: 50.0,
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: CachedNetworkImageProvider(
+                  "https://www.rollingstone.com/wp-content/uploads/2018/06/eminem-track-by-track-revival-new-57b63db3-3bb9-4b7e-b3a4-7f0e48714a0e.jpg",
+                ),
+                fit: BoxFit.cover,
+              ),
+              borderRadius: BorderRadius.circular(12.0),
+              color: _theme.primaryColor,
+            ),
+          ),
           title: Text(
             "Eminem",
             style: _theme.textTheme.title.merge(
@@ -57,6 +82,7 @@ class _CategoryState extends State<Category> {
           ),
           subtitle: Text("Love the way you lie"),
           trailing: IconButton(
+            padding: EdgeInsets.all(0.0),
             icon: Icon(
               SimpleLineIcons.options_vertical,
               color: _theme.primaryColor,
@@ -92,14 +118,16 @@ class _CategoryState extends State<Category> {
                 Hero(
                   tag: "rock",
                   child: Container(
-                    decoration: BoxDecoration(
-                      image: DecorationImage(
-                        image: CachedNetworkImageProvider(
-                          "https://cdn.pixabay.com/photo/2016/01/19/17/56/concert-1149979_960_720.jpg",
-                        ),
-                        fit: BoxFit.cover,
-                      ),
-                    ),
+                    decoration: isCollapsed
+                        ? null
+                        : BoxDecoration(
+                            image: DecorationImage(
+                              image: CachedNetworkImageProvider(
+                                "https://cdn.pixabay.com/photo/2016/01/19/17/56/concert-1149979_960_720.jpg",
+                              ),
+                              fit: BoxFit.cover,
+                            ),
+                          ),
                   ),
                 ),
                 isMinimumScroll
@@ -108,8 +136,8 @@ class _CategoryState extends State<Category> {
                         right: 30.0,
                         bottom: -30.0,
                         child: Container(
-                          width: 60.0,
-                          height: 60.0,
+                          width: 50.0,
+                          height: 50.0,
                           decoration: BoxDecoration(
                             boxShadow: [
                               BoxShadow(
@@ -124,6 +152,7 @@ class _CategoryState extends State<Category> {
                           child: Icon(
                             SimpleLineIcons.control_play,
                             color: _theme.primaryColor,
+                            size: 24.0,
                           ),
                         ),
                       ),

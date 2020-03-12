@@ -2,6 +2,7 @@ import 'package:audioplayers/audio_cache.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flute/styles/colors.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:audioplayers/audioplayers.dart';
 
@@ -16,6 +17,8 @@ class _PlayerScreenState extends State<PlayerScreen> {
   AudioCache audioCache;
   bool _isPlaying = false;
   Duration _position;
+
+  static const platform = const MethodChannel('track.channel');
 
   @override
   void initState() {
@@ -34,6 +37,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
     super.dispose();
   }
 
+  var _batteryLevel = "0.0";
   @override
   Widget build(BuildContext context) {
     final ThemeData _theme = Theme.of(context);
@@ -132,6 +136,29 @@ class _PlayerScreenState extends State<PlayerScreen> {
                 ),
               ),
               SizedBox(height: 15.0),
+              FlatButton(
+                color: _theme.primaryColor,
+                child: Text("Show Track Name"),
+                onPressed: () async {
+                  String trackName;
+                  try {
+                    var result = await platform.invokeMethod(
+                      'getTrackInfo',
+                    );
+                    print(result);
+                    trackName = '${result.toString()}';
+                  } on PlatformException catch (e) {
+                    trackName = "Failed to get track name: '${e.message}'.";
+                  } finally {
+                    setState(() {
+                      _batteryLevel = trackName;
+                    });
+                  }
+                },
+              ),
+              Container(
+                child: Text("$_batteryLevel"),
+              ),
               Container(
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -172,7 +199,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
                           boxShadow: [
                             BoxShadow(
                               color: Color.fromRGBO(0, 0, 0, 0.35),
-                              blurRadius: 15.0,
+                              blurRadius: 5.0,
                               spreadRadius: 1.0,
                             ),
                           ],
