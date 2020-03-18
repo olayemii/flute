@@ -1,5 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flute/router.dart';
+import 'package:flute/utils/play_time_total.dart';
+import 'package:flute/widgets/category/track_card.dart';
 import 'package:flute/widgets/homepage/artists.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
@@ -14,28 +16,40 @@ class _CategoryState extends State<Category> {
   bool _isMinimumScroll = false;
   bool _isCollapsed = false;
   FlutterAudioQuery _audioQuery;
-  List<SongInfo> _songs;
+  List<SongInfo> _songs = [];
   ScrollController _scrollController = ScrollController();
+
   void _scrollListener() {
+    /**
+     * If checks to reduce unnecessary rerenders... Only change state if state is not what it should be
+     */
     if (_scrollController.hasClients &&
         _scrollController.offset > (200 - kToolbarHeight)) {
-      setState(() {
-        _isMinimumScroll = true;
-      });
+      if (!_isMinimumScroll) {
+        setState(() {
+          _isMinimumScroll = true;
+        });
+      }
     } else {
-      setState(() {
-        _isMinimumScroll = false;
-      });
+      if (_isMinimumScroll) {
+        setState(() {
+          _isMinimumScroll = false;
+        });
+      }
     }
     // Keep track if sliver app bar is collapsed
     if (_scrollController.hasClients && _scrollController.offset >= 220.0) {
-      setState(() {
-        _isCollapsed = true;
-      });
+      if (!_isCollapsed) {
+        setState(() {
+          _isCollapsed = true;
+        });
+      }
     } else {
-      setState(() {
-        _isCollapsed = false;
-      });
+      if (_isCollapsed) {
+        setState(() {
+          _isCollapsed = false;
+        });
+      }
     }
   }
 
@@ -63,49 +77,6 @@ class _CategoryState extends State<Category> {
   @override
   Widget build(BuildContext context) {
     final ThemeData _theme = Theme.of(context);
-    List<Widget> _buildList(int count) {
-      return List.generate(count, (index) {
-        return ListTile(
-          onTap: () {
-            Navigator.of(context).pushNamed(PlayerRoute);
-          },
-          leading: Container(
-            width: 50.0,
-            height: 50.0,
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                image: _songs[index].albumArtwork != null
-                    ? AssetImage(_songs[index].albumArtwork)
-                    : CachedNetworkImageProvider(
-                        "https://www.rollingstone.com/wp-content/uploads/2018/06/eminem-track-by-track-revival-new-57b63db3-3bb9-4b7e-b3a4-7f0e48714a0e.jpg",
-                      ),
-                fit: BoxFit.cover,
-              ),
-              borderRadius: BorderRadius.circular(12.0),
-              color: _theme.primaryColor,
-            ),
-          ),
-          title: Text(
-            _songs[index].artist,
-            style: _theme.textTheme.title.merge(
-              TextStyle(
-                fontSize: 16.0,
-              ),
-            ),
-          ),
-          subtitle: Text(_songs[index].title),
-          trailing: IconButton(
-            padding: EdgeInsets.all(0.0),
-            icon: Icon(
-              SimpleLineIcons.options_vertical,
-              color: _theme.primaryColor,
-              size: 18.0,
-            ),
-            onPressed: () {},
-          ),
-        );
-      }).toList();
-    }
 
     return Scaffold(
       body: CustomScrollView(
@@ -210,7 +181,7 @@ class _CategoryState extends State<Category> {
                     style: _theme.textTheme.title,
                   ),
                   Text(
-                    "305 songs, 123 mins listen time",
+                    "${_songs.length} songs, ${totalPlayTime(_songs)} listen time",
                     style: _theme.textTheme.subtitle.merge(TextStyle(
                       color: Colors.grey,
                     )),
@@ -224,7 +195,7 @@ class _CategoryState extends State<Category> {
           ),
           SliverList(
             delegate: SliverChildListDelegate(
-              _buildList(_songs?.length),
+              buildList(_songs, context),
             ),
           )
         ],

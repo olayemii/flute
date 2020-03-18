@@ -1,12 +1,16 @@
 import 'package:audioplayers/audio_cache.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flute/providers/music_provider.dart';
 import 'package:flute/styles/colors.dart';
+import 'package:flute/widgets/playerscreen/play_controls.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:flute/utils/get_real_time.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:provider/provider.dart';
 
 class PlayerScreen extends StatefulWidget {
+  final Map arguments;
+  PlayerScreen({this.arguments}) : assert(arguments != null);
   @override
   _PlayerScreenState createState() => _PlayerScreenState();
 }
@@ -14,19 +18,41 @@ class PlayerScreen extends StatefulWidget {
 class _PlayerScreenState extends State<PlayerScreen> {
   double _seekValue = 0.0;
   AudioPlayer audioPlayer;
-  AudioCache audioCache;
-  bool _isPlaying = false;
-  Duration _position;
-  
+  String _seekStr = "";
+  MusicProvider provider;
+
   @override
   void initState() {
+    print(widget.arguments);
     initPlayer();
+    setState(() {
+      _seekStr = formatSeekValue(_seekValue);
+    });
     super.initState();
+  }
+
+  String formatSeekValue(double val) {
+    return getRealDuration(val.toInt().toString());
   }
 
   void initPlayer() {
     audioPlayer = AudioPlayer();
-    audioCache = AudioCache(fixedPlayer: audioPlayer);
+    // audioCache = AudioCache(fixedPlayer: audioPlayer);
+  }
+
+  @override
+  void didChangeDependencies() {
+    MusicProvider np = Provider.of<MusicProvider>(context);
+    audioPlayer.onAudioPositionChanged.listen((Duration duration) {
+      updateSeekValue((np.currentDuration / np.totalDuration).toDouble, np);
+    });
+    super.didChangeDependencies();
+  }
+
+  void updateSeekValue(double val, data) {
+    data.currentDuration = Duration(
+      milliseconds: (val * data.totalDuration).toInt(),
+    );
   }
 
   @override
@@ -35,11 +61,11 @@ class _PlayerScreenState extends State<PlayerScreen> {
     super.dispose();
   }
 
-  var _batteryLevel = "0.0";
   @override
   Widget build(BuildContext context) {
     final ThemeData _theme = Theme.of(context);
     final Size _size = MediaQuery.of(context).size;
+
     return Scaffold(
       appBar: AppBar(
         elevation: 0.0,
@@ -66,145 +92,112 @@ class _PlayerScreenState extends State<PlayerScreen> {
       body: SingleChildScrollView(
         child: Container(
           padding: EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Center(
-                child: Container(
-                  height: 300.0,
-                  width: _size.width * 0.75,
-                  decoration: BoxDecoration(
-                    color: _theme.primaryColor,
-                    image: DecorationImage(
-                      image: CachedNetworkImageProvider(
-                        "https://upload.wikimedia.org/wikipedia/en/e/e5/Marshmello_and_Bastille_Happier.png",
-                      ),
-                      fit: BoxFit.cover,
-                    ),
-                    borderRadius: BorderRadius.circular(20.0),
-                  ),
-                ),
-              ),
-              SizedBox(
-                height: 15.0,
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: SliderTheme(
-                  data: SliderThemeData(
-                    trackShape: CustomTrackShape(),
-                  ),
-                  child: Slider(
-                    activeColor: _theme.primaryColor,
-                    value: _seekValue,
-                    onChanged: (double value) {
-                      print(value);
-                      this.setState(() {
-                        _seekValue = value;
-                      });
-                    },
-                  ),
-                ),
-              ),
-              SizedBox(
-                height: 15.0,
-              ),
-              Container(
-                width: _size.width,
-                child: Text(
-                  "Happier",
-                  textAlign: TextAlign.center,
-                  style: _theme.textTheme.display1.merge(
-                    TextStyle(
-                      fontSize: 22.0,
-                    ),
-                  ),
-                ),
-              ),
-              Container(
-                width: _size.width,
-                child: Text(
-                  "Marshmello and Bastille",
-                  textAlign: TextAlign.center,
-                  style: _theme.textTheme.subtitle.merge(
-                    TextStyle(
-                      color: Colors.grey,
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(height: 15.0),
-              Container(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    IconButton(
-                      icon: Icon(
-                        AntDesign.retweet,
+          child: Consumer<MusicProvider>(
+            builder: (BuildContext context, data, child) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Center(
+                    child: Container(
+                      height: 300.0,
+                      width: _size.width * 0.75,
+                      decoration: BoxDecoration(
                         color: _theme.primaryColor,
+                        image: DecorationImage(
+                          image: AssetImage(data.albumArt),
+                          fit: BoxFit.cover,
+                        ),
+                        borderRadius: BorderRadius.circular(20.0),
                       ),
-                      onPressed: () {},
                     ),
-                    IconButton(
-                      icon: Icon(
-                        AntDesign.stepbackward,
-                        color: _theme.primaryColor,
-                      ),
-                      onPressed: () {},
-                    ),
-                    GestureDetector(
-                      onTap: () async {
-                        if (_isPlaying) {
-                          await audioPlayer.pause();
-                          this.setState(() {
-                            _isPlaying = false;
-                          });
-                        } else {
-                          await audioCache.play("audio.mp3");
-                          this.setState(() {
-                            _isPlaying = true;
-                          });
-                        }
-                      },
-                      child: Container(
-                        margin: EdgeInsets.symmetric(horizontal: 25.0),
-                        width: 60.0,
-                        height: 60.0,
-                        decoration: BoxDecoration(
-                          boxShadow: [
-                            BoxShadow(
-                              color: Color.fromRGBO(0, 0, 0, 0.35),
-                              blurRadius: 5.0,
-                              spreadRadius: 1.0,
+                  ),
+                  SizedBox(
+                    height: 15.0,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: Row(
+                      children: <Widget>[
+                        Container(
+                          width: 30.0,
+                          constraints: BoxConstraints(
+                            maxWidth: 40.0,
+                          ),
+                          child: Text(
+                            "${formatSeekValue(data.currentDuration.toDouble())}",
+                            style: TextStyle(fontSize: 11.0),
+                          ),
+                        ),
+                        Expanded(
+                          child: SliderTheme(
+                            data: SliderThemeData(
+                              trackShape: CustomTrackShape(),
                             ),
-                          ],
-                          color: Colors.white,
-                          shape: BoxShape.circle,
+                            child: Slider(
+                              activeColor: _theme.primaryColor,
+                              inactiveColor: lightOrange,
+                              value: (data.currentDuration / data.totalDuration)
+                                  .toDouble(),
+                              onChanged: (double value) {
+                                print(value);
+                                updateSeekValue(value, data);
+                                // audioPlayer.seek(
+                                //   Duration(
+                                //     milliseconds:
+                                //         (value * provider.currentDuration)
+                                //             .toInt(),
+                                //   ),
+                                // );
+                              },
+                            ),
+                          ),
                         ),
-                        child: Icon(
-                          _isPlaying ? AntDesign.pause : AntDesign.caretright,
-                          color: _theme.primaryColor,
+                        SizedBox(width: 7.0),
+                        Container(
+                          width: 30.0,
+                          constraints: BoxConstraints(
+                            maxWidth: 40.0,
+                          ),
+                          child: Text(
+                            formatSeekValue(data.totalDuration.toDouble()),
+                            style: TextStyle(fontSize: 11.0),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(
+                    height: 15.0,
+                  ),
+                  Container(
+                    width: _size.width,
+                    child: Text(
+                      "${data.track}",
+                      textAlign: TextAlign.center,
+                      style: _theme.textTheme.display1.merge(
+                        TextStyle(
+                          fontSize: 22.0,
                         ),
                       ),
                     ),
-                    IconButton(
-                      icon: Icon(
-                        AntDesign.stepforward,
-                        color: _theme.primaryColor,
+                  ),
+                  Container(
+                    width: _size.width,
+                    child: Text(
+                      "${data.artist}",
+                      textAlign: TextAlign.center,
+                      style: _theme.textTheme.subtitle.merge(
+                        TextStyle(
+                          color: Colors.grey,
+                        ),
                       ),
-                      onPressed: () {},
                     ),
-                    IconButton(
-                      icon: Icon(
-                        AntDesign.swap,
-                        color: _theme.primaryColor,
-                      ),
-                      onPressed: () {},
-                    ),
-                  ],
-                ),
-              )
-            ],
+                  ),
+                  SizedBox(height: 15.0),
+                  PlayControl(),
+                ],
+              );
+            },
           ),
         ),
       ),

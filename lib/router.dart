@@ -15,7 +15,8 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
       return MaterialPageRoute(builder: (BuildContext context) => Category());
     case PlayerRoute:
       return MaterialPageRoute(
-          builder: (BuildContext context) => PlayerScreen());
+          builder: (BuildContext context) =>
+              PlayerScreen(arguments: settings.arguments));
     default:
       return MaterialPageRoute(builder: (BuildContext context) => Homepage());
   }
