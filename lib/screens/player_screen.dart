@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:audioplayers/audio_cache.dart';
 import 'package:flute/providers/music_provider.dart';
 import 'package:flute/styles/colors.dart';
@@ -10,24 +12,18 @@ import 'package:provider/provider.dart';
 
 class PlayerScreen extends StatefulWidget {
   final Map arguments;
-  PlayerScreen({this.arguments}) : assert(arguments != null);
+  PlayerScreen({this.arguments});
   @override
   _PlayerScreenState createState() => _PlayerScreenState();
 }
 
 class _PlayerScreenState extends State<PlayerScreen> {
-  double _seekValue = 0.0;
   AudioPlayer audioPlayer;
-  String _seekStr = "";
   MusicProvider provider;
 
   @override
   void initState() {
-    print(widget.arguments);
     initPlayer();
-    setState(() {
-      _seekStr = formatSeekValue(_seekValue);
-    });
     super.initState();
   }
 
@@ -36,20 +32,37 @@ class _PlayerScreenState extends State<PlayerScreen> {
   }
 
   void initPlayer() {
-    audioPlayer = AudioPlayer();
-    // audioCache = AudioCache(fixedPlayer: audioPlayer);
+    MusicProvider np = Provider.of<MusicProvider>(context, listen: false);
+    if (np.audioInstance != null && widget.arguments["path"] == np.path) {
+      audioPlayer = np.audioInstance;
+    } else {
+      audioPlayer = AudioPlayer(playerId: 'flute_player');
+    }
   }
 
   @override
   void didChangeDependencies() {
     MusicProvider np = Provider.of<MusicProvider>(context);
-    audioPlayer.onAudioPositionChanged.listen((Duration duration) {
-      updateSeekValue((np.currentDuration / np.totalDuration).toDouble, np);
+    Future.delayed(Duration(seconds: 0)).then((_) {
+      if (np.audioInstance == null) {
+        np.audioInstance = audioPlayer;
+        np.audioInstance.play(np.path);
+        np.audioInstance.onAudioPositionChanged.listen((Duration duration) {
+          print("Still listening");
+          updateSeekValue(
+              (duration.inMilliseconds / np.totalDuration).toDouble(), np);
+        });
+        np.audioInstance.onPlayerCompletion.listen((ev) {
+          np.audioInstance.seek(Duration(seconds: 0));
+          np.isPlaying = false;
+        });
+      }
+      super.didChangeDependencies();
     });
-    super.didChangeDependencies();
   }
 
   void updateSeekValue(double val, data) {
+    print(val);
     data.currentDuration = Duration(
       milliseconds: (val * data.totalDuration).toInt(),
     );
@@ -57,7 +70,6 @@ class _PlayerScreenState extends State<PlayerScreen> {
 
   @override
   void dispose() {
-    audioPlayer.dispose();
     super.dispose();
   }
 
@@ -91,6 +103,8 @@ class _PlayerScreenState extends State<PlayerScreen> {
       ),
       body: SingleChildScrollView(
         child: Container(
+          constraints:
+              BoxConstraints(minHeight: _size.height - (kToolbarHeight + 56)),
           padding: EdgeInsets.all(24.0),
           child: Consumer<MusicProvider>(
             builder: (BuildContext context, data, child) {
@@ -99,12 +113,12 @@ class _PlayerScreenState extends State<PlayerScreen> {
                 children: <Widget>[
                   Center(
                     child: Container(
-                      height: 300.0,
-                      width: _size.width * 0.75,
+                      height: _size.height * 0.5,
+                      width: _size.width * 0.8,
                       decoration: BoxDecoration(
                         color: _theme.primaryColor,
                         image: DecorationImage(
-                          image: AssetImage(data.albumArt),
+                          image: FileImage(File(data.albumArt)),
                           fit: BoxFit.cover,
                         ),
                         borderRadius: BorderRadius.circular(20.0),
@@ -119,14 +133,17 @@ class _PlayerScreenState extends State<PlayerScreen> {
                     child: Row(
                       children: <Widget>[
                         Container(
-                          width: 30.0,
+                          width: 35.0,
                           constraints: BoxConstraints(
-                            maxWidth: 40.0,
+                            maxWidth: 45.0,
                           ),
                           child: Text(
                             "${formatSeekValue(data.currentDuration.toDouble())}",
                             style: TextStyle(fontSize: 11.0),
                           ),
+                        ),
+                        SizedBox(
+                          width: 7.0,
                         ),
                         Expanded(
                           child: SliderTheme(
@@ -139,15 +156,14 @@ class _PlayerScreenState extends State<PlayerScreen> {
                               value: (data.currentDuration / data.totalDuration)
                                   .toDouble(),
                               onChanged: (double value) {
-                                print(value);
-                                updateSeekValue(value, data);
-                                // audioPlayer.seek(
-                                //   Duration(
-                                //     milliseconds:
-                                //         (value * provider.currentDuration)
-                                //             .toInt(),
-                                //   ),
-                                // );
+                                print("Changed");
+                                audioPlayer.seek(
+                                  Duration(
+                                    milliseconds:
+                                        (value * data.totalDuration).toInt(),
+                                  ),
+                                );
+                                // updateSeekValue(value, data);
                               },
                             ),
                           ),

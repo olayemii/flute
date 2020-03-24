@@ -56,13 +56,28 @@ class _CategoryState extends State<Category> {
   @override
   void initState() {
     _scrollController.addListener(_scrollListener);
-    checkTracks();
     super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    checkTracks();
+    super.didChangeDependencies();
   }
 
   void checkTracks() async {
     _audioQuery = FlutterAudioQuery();
     _songs = await _audioQuery.getSongs();
+    // print(_songs.length);
+    try {
+      List<GenreInfo> genreList = await _audioQuery.searchGenres(query: "pop");
+      var b = await _audioQuery.getArtistsFromGenre(genre: "Pop");
+      print(b);
+    } catch (e) {
+      print(e);
+    }
+    // await _audioQuery.getSongsFromGenre(genre: genre.name);
+
     setState(() {
       _songs = _songs;
     });

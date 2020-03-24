@@ -25,7 +25,9 @@ dependencies:
   path_provider: ^1.6.5
   cached_network_image: ^2.0.0
   audioplayers: ^0.14.0
-  flutter_audio_query: ^0.3.4+2
+  # flutter_audio_query: ^0.3.4+2
+  flutter_audio_query:
+    path: ./flutter_audio_query
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^0.1.2
@@ -45,8 +47,7 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  assets:
-    - assets/audio.mp3
+  # assets:
   #  - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

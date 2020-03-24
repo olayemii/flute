@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flute/providers/music_provider.dart';
 import 'package:flute/router.dart';
@@ -16,27 +18,23 @@ List<Widget> buildList(List songs, BuildContext context) {
       onTap: () {
         final MusicProvider provider =
             Provider.of<MusicProvider>(context, listen: false);
-        provider.setMusic(
-          _currentSong.artist,
-          _currentSong.title,
-          _currentSong.albumArtwork,
-          null,
-          true,
-          Duration(
-            milliseconds: int.parse(_currentSong.duration),
-          ),
-        );
+        if (provider.path != _currentSong.filePath) {
+          provider.setMusic(
+            _currentSong.artist,
+            _currentSong.title,
+            _currentSong.albumArtwork ??
+                "https://www.rollingstone.com/wp-content/uploads/2018/06/eminem-track-by-track-revival-new-57b63db3-3bb9-4b7e-b3a4-7f0e48714a0e.jpg",
+            null,
+            true,
+            Duration(
+              milliseconds: int.parse(_currentSong.duration),
+            ),
+            _currentSong.filePath,
+          );
+        }
 
-        Navigator.of(context).pushNamed(
-          PlayerRoute,
-          arguments: {
-            "title": _currentSong.title,
-            "duration": _currentSong.duration,
-            "path": _currentSong.filePath,
-            "artist": _currentSong.artist,
-            "albumArtPath": _currentSong.albumArtwork,
-          },
-        );
+        Navigator.of(context)
+            .pushNamed(PlayerRoute, arguments: {"path": _currentSong.filePath});
       },
       leading: Container(
         width: 50.0,
@@ -44,7 +42,7 @@ List<Widget> buildList(List songs, BuildContext context) {
         decoration: BoxDecoration(
           image: DecorationImage(
             image: _currentSong.albumArtwork != null
-                ? AssetImage(_currentSong.albumArtwork)
+                ? FileImage(File(_currentSong.albumArtwork))
                 : CachedNetworkImageProvider(
                     "https://www.rollingstone.com/wp-content/uploads/2018/06/eminem-track-by-track-revival-new-57b63db3-3bb9-4b7e-b3a4-7f0e48714a0e.jpg",
                   ),

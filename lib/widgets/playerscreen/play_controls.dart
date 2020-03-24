@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
+import 'package:provider/provider.dart';
+
+import '../../providers/music_provider.dart';
 
 class PlayControl extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    print("Rebuilding...");
     final ThemeData _theme = Theme.of(context);
+    final MusicProvider mp = Provider.of<MusicProvider>(context);
     return Container(
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -26,17 +29,14 @@ class PlayControl extends StatelessWidget {
           ),
           GestureDetector(
             onTap: () async {
-              // if (_isPlaying) {
-              //   await audioPlayer.pause();
-              //   this.setState(() {
-              //     _isPlaying = false;
-              //   });
-              // } else {
-              //   await audioPlayer.play(widget.arguments["path"]);
-              //   this.setState(() {
-              //     _isPlaying = true;
-              //   });
-              // }
+              if (mp.isPlaying) {
+                await mp.audioInstance.pause();
+                mp.isPlaying = false;
+              } else {
+                print("The value is ${mp.path}");
+                await mp.audioInstance.play(mp.path);
+                mp.isPlaying = true;
+              }
             },
             child: Container(
               margin: EdgeInsets.symmetric(horizontal: 25.0),
@@ -54,7 +54,7 @@ class PlayControl extends StatelessWidget {
                 shape: BoxShape.circle,
               ),
               child: Icon(
-                true ? AntDesign.pause : AntDesign.caretright,
+                mp.isPlaying ? AntDesign.pause : AntDesign.caretright,
                 color: _theme.primaryColor,
               ),
             ),
