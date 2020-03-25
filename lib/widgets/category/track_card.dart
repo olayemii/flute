@@ -22,8 +22,7 @@ List<Widget> buildList(List songs, BuildContext context) {
           provider.setMusic(
             _currentSong.artist,
             _currentSong.title,
-            _currentSong.albumArtwork ??
-                "https://www.rollingstone.com/wp-content/uploads/2018/06/eminem-track-by-track-revival-new-57b63db3-3bb9-4b7e-b3a4-7f0e48714a0e.jpg",
+            _currentSong.albumArtwork ?? null,
             null,
             true,
             Duration(
@@ -43,13 +42,10 @@ List<Widget> buildList(List songs, BuildContext context) {
           image: DecorationImage(
             image: _currentSong.albumArtwork != null
                 ? FileImage(File(_currentSong.albumArtwork))
-                : CachedNetworkImageProvider(
-                    "https://www.rollingstone.com/wp-content/uploads/2018/06/eminem-track-by-track-revival-new-57b63db3-3bb9-4b7e-b3a4-7f0e48714a0e.jpg",
-                  ),
+                : AssetImage("assets/images/headphone.png"),
             fit: BoxFit.cover,
           ),
           borderRadius: BorderRadius.circular(12.0),
-          color: _theme.primaryColor,
         ),
       ),
       title: Text(

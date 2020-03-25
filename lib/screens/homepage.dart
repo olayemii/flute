@@ -1,11 +1,69 @@
+import 'dart:convert';
+
 import 'package:flute/widgets/artistcard.dart';
 import 'package:flute/widgets/homepage/artists.dart';
 import 'package:flute/widgets/homepage/genres.dart';
 import 'package:flute/widgets/homepage/header.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_audio_query/flutter_audio_query.dart';
 import 'package:flutter_icons/flutter_icons.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class Homepage extends StatelessWidget {
+class Homepage extends StatefulWidget {
+  @override
+  _HomepageState createState() => _HomepageState();
+}
+
+class _HomepageState extends State<Homepage> {
+  FlutterAudioQuery _audioQuery;
+  List<SongInfo> _songs = [];
+  @override
+  void initState() {
+    /**
+     * Fetch all songs on device, cache the json, [use map for albums], artists
+     * Fetch my genres too and cache
+     * Invalidate cache my checking music length with cached music length
+     */
+    fetchTracks();
+    super.initState();
+  }
+
+  void fetchTracks() async {
+    // SharedPreferences sp = await SharedPreferences.getInstance()
+
+    _audioQuery = FlutterAudioQuery();
+    _songs = await _audioQuery.getSongs();
+
+    // sp.setStringList('song_list', songListMap(_songs))
+
+    songListMap(_songs);
+  }
+
+  dynamic songListMap(List<SongInfo> songs) {
+    Map artists = {};
+    Map albums = {};
+
+    return songs.map((song) {
+      if (artists[song.artist] == null) {
+        artists[song.artist] = [];
+      }
+
+      if (albums[song.album] == null) {
+        albums[song.album] = [];
+      }
+
+      artists[song.artist].add(song);
+      albums[song.album].add(song);
+
+      print(artists);
+      return {
+        "song_list": song.toMap,
+        "artists": artists,
+        "albums": albums,
+      };
+    }).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
     final _theme = Theme.of(context);

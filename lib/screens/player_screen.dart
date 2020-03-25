@@ -35,6 +35,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
     MusicProvider np = Provider.of<MusicProvider>(context, listen: false);
     if (np.audioInstance != null && widget.arguments["path"] == np.path) {
       audioPlayer = np.audioInstance;
+      np.audioInstance.play(np.path);
     } else {
       audioPlayer = AudioPlayer(playerId: 'flute_player');
     }
@@ -46,7 +47,6 @@ class _PlayerScreenState extends State<PlayerScreen> {
     Future.delayed(Duration(seconds: 0)).then((_) {
       if (np.audioInstance == null) {
         np.audioInstance = audioPlayer;
-        np.audioInstance.play(np.path);
         np.audioInstance.onAudioPositionChanged.listen((Duration duration) {
           print("Still listening");
           updateSeekValue(
@@ -56,7 +56,9 @@ class _PlayerScreenState extends State<PlayerScreen> {
           np.audioInstance.seek(Duration(seconds: 0));
           np.isPlaying = false;
         });
+        np.audioInstance.play(np.path);
       }
+
       super.didChangeDependencies();
     });
   }
@@ -116,9 +118,10 @@ class _PlayerScreenState extends State<PlayerScreen> {
                       height: _size.height * 0.5,
                       width: _size.width * 0.8,
                       decoration: BoxDecoration(
-                        color: _theme.primaryColor,
                         image: DecorationImage(
-                          image: FileImage(File(data.albumArt)),
+                          image: data.albumArt == null
+                              ? AssetImage("assets/images/headphonelg.png")
+                              : FileImage(File(data.albumArt)),
                           fit: BoxFit.cover,
                         ),
                         borderRadius: BorderRadius.circular(20.0),

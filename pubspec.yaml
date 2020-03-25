@@ -24,7 +24,9 @@ dependencies:
   provider: ^4.0.4
   path_provider: ^1.6.5
   cached_network_image: ^2.0.0
-  audioplayers: ^0.14.0
+  audioplayers:
+    path: ./audioplayers
+
   # flutter_audio_query: ^0.3.4+2
   flutter_audio_query:
     path: ./flutter_audio_query
@@ -47,8 +49,8 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
-  #  - images/a_dot_ham.jpeg
+  assets:
+    - assets/images/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

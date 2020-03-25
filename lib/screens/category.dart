@@ -71,8 +71,8 @@ class _CategoryState extends State<Category> {
     // print(_songs.length);
     try {
       List<GenreInfo> genreList = await _audioQuery.searchGenres(query: "pop");
-      var b = await _audioQuery.getArtistsFromGenre(genre: "Pop");
-      print(b);
+      // var b = await _audioQuery.getArtistsFromGenre(genre: "Pop");
+      // print(b);
     } catch (e) {
       print(e);
     }
