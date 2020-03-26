@@ -12,7 +12,9 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
     case HomepageRoute:
       return MaterialPageRoute(builder: (BuildContext context) => Homepage());
     case CategoryRoute:
-      return MaterialPageRoute(builder: (BuildContext context) => Category());
+      return MaterialPageRoute(
+          builder: (BuildContext context) =>
+              Category(arguments: settings.arguments));
     case PlayerRoute:
       return MaterialPageRoute(
           builder: (BuildContext context) =>

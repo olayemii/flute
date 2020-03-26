@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flute/models/genre_info.dart';
 import 'package:flute/router.dart';
 import 'package:flute/utils/play_time_total.dart';
 import 'package:flute/widgets/category/track_card.dart';
@@ -8,6 +9,8 @@ import 'package:flutter_icons/flutter_icons.dart';
 import 'package:flutter_audio_query/flutter_audio_query.dart';
 
 class Category extends StatefulWidget {
+  final Map<String, GenreRender> arguments;
+  Category({this.arguments});
   @override
   _CategoryState createState() => _CategoryState();
 }
@@ -70,14 +73,14 @@ class _CategoryState extends State<Category> {
     _songs = await _audioQuery.getSongs();
     // print(_songs.length);
     try {
-      List<GenreInfo> genreList = await _audioQuery.searchGenres(query: "pop");
+      // List<GenreInfo> genreList = await _audioQuery.searchGenres(query: "unk");
       // var b = await _audioQuery.getArtistsFromGenre(genre: "Pop");
-      // print(b);
+      // print(genreList[0].name);
     } catch (e) {
       print(e);
     }
-    // await _audioQuery.getSongsFromGenre(genre: genre.name);
-
+    var a = await _audioQuery.getSongsFromGenre(genre: "pop");
+    print(a);
     setState(() {
       _songs = _songs;
     });
@@ -121,9 +124,8 @@ class _CategoryState extends State<Category> {
                         ? null
                         : BoxDecoration(
                             image: DecorationImage(
-                              image: CachedNetworkImageProvider(
-                                "https://cdn.pixabay.com/photo/2016/01/19/17/56/concert-1149979_960_720.jpg",
-                              ),
+                              image:
+                                  AssetImage(widget.arguments["genre"].image),
                               fit: BoxFit.cover,
                             ),
                           ),
